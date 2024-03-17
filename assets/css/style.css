@@ -1,0 +1,12 @@
+.header{
+    color: white;
+    display: flex;
+    height: 30px;
+    justify-content: center;
+    float: none;
+    align-items: center;
+    background: blue;
+    font-family: monospace,'Courier New', Courier;
+    font-weight: bolder;
+    background-image: linear-gradient(to right, rgb(101, 109, 219) , rgb(58, 20, 148));
+}
