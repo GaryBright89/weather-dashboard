@@ -10,7 +10,7 @@ function initFetch() {
 }
 
 async function fectchData({lat, lon}) {
-    const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${APIKey}`;
+    const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${cb37cc7caf84c8b235be1e55107a2817}`;
 
   try {  
     const res = await fetch(url);
@@ -21,7 +21,6 @@ async function fectchData({lat, lon}) {
             title: article.title,
             date: article.date,
             subject: article.subject,
-        // description might be undefined, if undefined return 'no description...'
             description: article.description
               ? article.description
               : ['No description for this entry.'],
