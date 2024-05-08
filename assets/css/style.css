@@ -1,13 +1,76 @@
-.header{
-    color: white;
+header{
+    color: rgb(252, 246, 246);
     display: flex;
-    height: 40px;
+    height: 60px;
     justify-content: center;
-    float: none;
-    align-items: center;
-    background: blue;
     font-size: 5ch;
     font-family: monospace,'Courier New', Courier;
     font-weight: bolder;
     background-image: linear-gradient(to right, rgb(101, 109, 219) , rgb(52, 17, 133));
+    border-bottom: rgb(8, 7, 10);
+}
+
+form {
+    display: flex;
+    justify-content: center;
+}
+
+body {
+    height: 100vh;
+    background-color: rgb(121, 121, 121);
+}
+
+
+button {
+    width: 215px;
+    background-image: linear-gradient(to right, rgb(101, 109, 219) , rgb(52, 17, 133));
+    border-radius: 5px;
+}
+
+#searchArea {
+    border-right: #ffffff 4px solid;
+    border-bottom: #ffffff 4px solid;
+  }
+h3{
+    color: #ffffff;
+}
+h4{
+    align-self: center;
+}
+
+#todayWeather{
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+}
+
+#forecastWeather{
+    display: flex;
+    flex-direction: row;
+}
+.weather-card {
+    border: #ffffff 4px solid;
+    margin: 5px;
+    border-radius: 5px;
+    background-color: rgb(101, 109, 219) ;
+    color: white;
+    padding: 4px;
+    width: 100%;
+  }
+.first-card{
+    width: 50%
+}
+
+.city-button{
+    width: 200px;
+    height: 40px;
+    border-radius: 5px;
+    color:white;
+    margin: 10px;
+}
+
+#searchHistory{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }

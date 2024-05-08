@@ -1,77 +1,154 @@
-const container = $('#results-container');
+//Dependencies
+const form = document.querySelector("form");
+const apiKey = "cb37cc7caf84c8b235be1e55107a2817";
 
-function initFetch() {
-    const currentUrl = location.search;
-    const searchParams = new URLSearchParams(currentUrl)
-    const city = searchParams.get('city');
-    const search =  searchParams.get('search?query');
-    const APIKey = 'cb37cc7caf84c8b235be1e55107a2817'
-    return {city, APIKey, search};
+//Functions
+function fetchCurrentWeather(cityName) {
+  return fetch(
+    `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}`
+  ).then((response) => response.json());
 }
 
-async function fectchData({lat, lon}) {
-    const url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${cb37cc7caf84c8b235be1e55107a2817}`;
+function fetchForecastData(latitude, longitude) {
+  return fetch(
+    `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${apiKey}`
+  ).then((response) => response.json());
+}
+function weatherCard(weather, isFirstCard) {
 
-  try {  
-    const res = await fetch(url);
-    const data = await res.json();
-    console.log(data)
-    const articlesArray = data.content.results.map((article) => {
-        return {
-            title: article.title,
-            date: article.date,
-            subject: article.subject,
-            description: article.description
-              ? article.description
-              : ['No description for this entry.'],
-            button: article.id,
-        };
-    });
-
-    container.empty();
-    return articlesArray;
-  } catch (error) {
-    resultsHeading.text('Error');
-    console.error(error);
+  const temperature = weather.temp;
+  //temp conversion from kelvin to fahrenheit
+  const realTemp = ((temperature - 273.15) * 9) / 5 + 32;
+  
+    const weatherSymbols = {
+      "clear sky": "☀️",
+      "few clouds": "🌤️",
+      "scattered clouds": "⛅",
+      "broken clouds": "☁️",
+      "overcast clouds": "☁️",
+      mist: "🌫️",
+      fog: "🌫️",
+      "light rain": "🌧️",
+      "moderate rain": "🌧️",
+      "heavy intensity rain": "🌧️",
+    };
+  
+    const weatherSymbol = weatherSymbols[weather.clouds.toLowerCase()] || "☁️";
+  
+    const cityName = isFirstCard
+      ? weather.city.charAt(0).toUpperCase() + weather.city.slice(1)
+      : "";
+  
+    const cardContent = `
+        <div class="weather-card ${isFirstCard ? "first-card" : ""}">
+            <h4>${cityName}</h4>
+            <p>Date: ${weather.date}</p>
+            <p>${weatherSymbol}</p>
+            <p>Temp: ${realTemp.toFixed(2)}°F</p>
+            <p>Wind Speed: ${weather.windSpeed} mph</p>
+            <p>Humidity: ${weather.humidity}%</p>
+        </div>
+    `;
+  
+    return cardContent;
   }
-}
 
-function createCardElement({date, icon, temperature, wind, humidity}) {
+  form.addEventListener("submit", handleFormSubmit);
 
-    const card = $('<dive class= "card">');
-    console.log(button)
-    card.html(`
-    <div class='card-body d-flex flex-column gap-2'>
-    <div>
-        <h4 class='card=title'>${title ? title : 'Entry has no title'}</h4>
-        <h5 class='card-subtitle mb-2 text-body-secondary'>Date: ${
-          date ? date : 'Entry has no date'
-        }</h5>
-        </div>
-        <div>
-        <p class='card-text m-0 fw-semibold border-bottom'>Subjects</p>
-        <p class='card-text m-0'>${
-          icon ? icon : 'Entry has no icon'
-        }</p></div>
-        <div>
-        <p class='card-text m-0 fw-semibold border-bottom'>Temp:</p>
-        <p class='card-text m-0'>${
-          temperature ? temperature : 'Entry has no temperature'
-        }</p>
-        </div>
-        <div>
-        <p class='card-text m-0 fw-semibold border-bottom'>Wind:</p>
-        <p class='card-text m-0'>${
-          wind ? wind : 'Entry has no wind'
-        }</p></div>
-        <div>
-        <p class='card-text m-0 fw-semibold border-bottom'>Humidity:</p>
-        <p class='card-text m-0'>${
-          humidity ? humidity : 'Entry has no humidity'
-        }</p></div>
-      `)
+  function handleFormSubmit(event) {
+    event.preventDefault();
+    const cityInput = document.getElementById("cityInput").value;
+    let cityName = cityInput;
+  
+    fetchCurrentWeather(cityName)
+      .then((data) => {
+        const latitude = data.coord.lat;
+        const longitude = data.coord.lon;
+        return fetchForecastData(latitude, longitude);
+      })
+      .then((weatherData) => {
+        const weatherDashboardData = processWeatherData(cityName, weatherData);
+        displayWeatherCard(weatherDashboardData);
+        storeWeatherData(weatherDashboardData);
+        createWeatherButton(weatherDashboardData);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
 
 
-    return card;
-}
+  function displayWeatherCard(weatherData) {
+    const todayWeather = weatherData[0];
+    const forecastWeather = weatherData.slice(1);
+  
+    const currentCard = weatherCard(todayWeather, true);
+    const forecastCard = forecastWeather.map((weather) =>
+      weatherCard(weather, false)
+    );
+  
+    const todayWeatherElement = document.getElementById("todayWeather");
+    const forecastWeatherElement = document.getElementById("forecastWeather");
+  
+    if (todayWeatherElement && forecastWeatherElement) {
+      todayWeatherElement.innerHTML = currentCard;
+      forecastWeatherElement.innerHTML = forecastCard.join("");
+    } else {
+      console.error("Error");
+    }
+  }
+  
+  
+  
+  function processWeatherData(cityName, weatherData) {
+    const todayWeather = {
+      city: cityName,
+      date: new Date().toLocaleDateString(),
+      clouds: weatherData.list[0].weather[0].description,
+      temp: weatherData.list[0].main.temp,
+      windSpeed: weatherData.list[0].wind.speed,
+      humidity: weatherData.list[0].main.humidity,
+    };
+  
+    const forecast = [];
+    for (let i = 1; i <= 5; i++) {
+      const forecastData = {
+        city: cityName,
+        date: new Date(weatherData.list[i * 4].dt * 1000).toLocaleDateString(),
+        clouds: weatherData.list[i * 4].weather[0].description,
+        temp: weatherData.list[i * 4].main.temp,
+        windSpeed: weatherData.list[i * 4].wind.speed,
+        humidity: weatherData.list[i * 4].main.humidity,
+      };
+      forecast.push(forecastData);
+    }
+  
+    return [todayWeather, ...forecast];
+  }
+  
+  function storeWeatherData(weatherData) {
+    localStorage.setItem("weatherDashboardData", JSON.stringify(weatherData));
+  }
+  
+  document.addEventListener("DOMContentLoaded", () => {
+    const storedWeatherData = localStorage.getItem("weatherDashboardData");
+    if (storedWeatherData) {
+      const weatherData = JSON.parse(storedWeatherData);
+      displayWeatherCard(weatherData);
+    }
+  });
+  
+  function createWeatherButton(weatherData) {
+    var button = document.createElement("button");
+    button.textContent = weatherData[0].city;
+    button.classList.add("city-button");
+  
+    button.addEventListener("click", function () {
+      displayWeatherCard(weatherData);
+    });
+  
+    var searchHistoryArea = document.getElementById("searchHistory");
+    searchHistoryArea.appendChild(button);
+  }
+
 
